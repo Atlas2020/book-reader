@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starlight Reader</title>
+    <meta name="theme-color" content="#080f23" />
+    <meta name="description" content="A personal audiobook reader with chapter navigation and offline support." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="style.css?v=pwa-3" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <h1>Starlight Reader</h1>
+        <div class="install-area">
+          <button type="button" id="installBtn" class="install-btn" hidden>Install App</button>
+          <p id="installHelp" class="install-help" role="status" hidden></p>
+          <p id="offlineStatus" class="install-help" hidden>Offline reading is ready on this device.</p>
+        </div>
+      </header>
+
+      <figure class="hero-image">
+        <img src="images/girl-under-tree.jpg" alt="A person reading beneath a tree" />
+      </figure>
+
+      <section class="library-bar" aria-label="Library">
+        <label for="librarySelect">My Library</label>
+        <select id="librarySelect" disabled>
+          <option value="">Import a book to get started</option>
+        </select>
+        <label class="upload-label">
+          Import Book
+          <input type="file" id="fileInput" accept=".txt,.md,.epub" />
+        </label>
+      </section>
+
+      <section class="book-status" id="bookStatus" hidden>
+        <div>
+          <h2 id="bookTitle"></h2>
+          <p id="readingPosition">Choose a chapter to start reading</p>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="progressBar"></span>
+        </div>
+        <span id="progressLabel">0%</span>
+      </section>
+
+      <section class="toolbar" aria-label="Playback controls">
+        <button id="prevChapterBtn" class="secondary-control" disabled>Previous Chapter</button>
+        <button id="rewindBtn" class="secondary-control" disabled>Back 10s</button>
+        <button id="playBtn" disabled>Play</button>
+        <button id="pauseBtn" disabled>Pause</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <button id="forwardBtn" class="secondary-control" disabled>Forward 10s</button>
+        <button id="nextChapterBtn" class="secondary-control" disabled>Next Chapter</button>
+      </section>
+
+      <section class="settings-row" aria-label="Reading settings">
+        <div class="setting-control speed-control">
+          <label for="rateInput">Speed</label>
+          <input id="rateInput" type="range" min="0.5" max="1.5" step="0.1" value="1" />
+          <span id="rateValue">1.0x</span>
+        </div>
+        <div class="setting-control voice-control">
+          <label for="voiceSelect">Voice</label>
+          <select id="voiceSelect" disabled>
+            <option value="">Loading voices…</option>
+          </select>
+          <button type="button" id="refreshVoicesBtn" class="tertiary-control">Refresh Voices</button>
+          <span id="voiceHelp" class="voice-help" aria-live="polite"></span>
+        </div>
+        <details class="display-settings">
+          <summary>Display Settings</summary>
+          <div class="display-options">
+            <label for="fontSizeInput">Font Size <output id="fontSizeValue">18px</output></label>
+            <input id="fontSizeInput" type="range" min="14" max="30" step="1" value="18" />
+            <label for="lineHeightInput">Line Spacing <output id="lineHeightValue">1.9</output></label>
+            <input id="lineHeightInput" type="range" min="1.4" max="2.4" step="0.1" value="1.9" />
+            <label for="contentWidthInput">Content Width <output id="contentWidthValue">Wide</output></label>
+            <input id="contentWidthInput" type="range" min="600" max="1000" step="20" value="900" />
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect">
+              <option value="dark">Midnight</option>
+              <option value="light">Daylight</option>
+              <option value="sepia">Sepia</option>
+            </select>
+          </div>
+        </details>
+      </section>
+
+      <div class="reader-layout">
+        <nav class="chapter-nav" id="chapterNav" aria-label="Chapter navigation" hidden>
+          <div class="chapter-nav-header">
+            <h2>Chapters</h2>
+            <button id="toggleChaptersBtn" class="tertiary-control" aria-expanded="true" type="button">Collapse</button>
+          </div>
+          <label class="chapter-search-label" for="chapterSearch">Search chapters</label>
+          <input id="chapterSearch" class="chapter-search" type="search" placeholder="Enter a chapter title" />
+          <div id="chapterList" class="chapter-list"></div>
+        </nav>
+
+        <main>
+          <div id="content" class="content" tabindex="0">
+            Select a book from your library or import a .txt, .md, or non-DRM .epub file.
+          </div>
+        </main>
+      </div>
+
+      <p id="appMessage" class="app-message" role="status" aria-live="polite"></p>
+    </div>
+
+    <script src="jszip.min.js"></script>
+    <script src="script.js?v=pwa-3"></script>
+  </body>
+</html>
