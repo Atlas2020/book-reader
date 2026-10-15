@@ -18,6 +18,7 @@ const progressTrack = document.querySelector('.progress-track');
 const progressLabel = document.getElementById('progressLabel');
 const appMessage = document.getElementById('appMessage');
 const content = document.getElementById('content');
+const backHomeBtn = document.getElementById('backHomeBtn');
 const readerLayout = document.querySelector('.reader-layout');
 const transcriptCoverImage = document.getElementById('transcriptCoverImage');
 const transcriptCoverTitle = document.getElementById('transcriptCoverTitle');
@@ -895,6 +896,16 @@ function closeTranscriptView() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function returnToHome() {
+  stopSpeech();
+  persistProgress();
+  document.body.dataset.page = 'home';
+  librarySelect.value = '';
+  content.textContent = '选择一本书或导入新书，开始听书。';
+  appMessage.textContent = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function updateReadingProgress(offset = currentBookProgress.offset) {
   const chapterLength = chapters[selectedChapterIndex]?.text.length || 0;
   currentBookProgress = {
@@ -1001,6 +1012,7 @@ async function loadBook(bookId) {
   const book = await requestBookStore('readonly', (store) => store.get(bookId));
   if (!book) throw new Error('This book is no longer in your library. Please import it again.');
   stopSpeech();
+  document.body.dataset.page = 'player';
   currentBookId = book.id;
   currentBookTitle = book.title;
   currentBookCover = book.cover || null;
@@ -1085,6 +1097,7 @@ voiceSelect.addEventListener('change', function () {
 
 rateInput.addEventListener('change', saveCurrentSettings);
 closeTranscriptBtn.addEventListener('click', closeTranscriptView);
+backHomeBtn.addEventListener('click', returnToHome);
 
 toggleChaptersBtn.addEventListener('click', function () {
   const collapsed = chapterNav.classList.toggle('is-collapsed');
@@ -1160,6 +1173,7 @@ fileInput.addEventListener('change', async function (event) {
     if (chapters.length > 0) {
       renderChapterList();
       renderChapterText(chapters[0].text);
+      document.body.dataset.page = 'player';
       updateBookStatus();
       appMessage.textContent = `"${currentBookTitle}" has been added to your library.`;
     } else {

@@ -124,6 +124,34 @@ summary:focus-visible {
   margin: 0 auto 14px;
 }
 
+.home-return {
+  display: none;
+  align-items: center;
+  min-height: 38px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  color: var(--page-muted);
+  background: transparent;
+  border-color: var(--panel-border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+body[data-page="player"] .home-return {
+  display: inline-flex;
+}
+
+body[data-page="player"] .library-bar,
+body[data-page="home"] .toolbar,
+body[data-page="home"] .player-settings {
+  display: none;
+}
+
+body[data-page="home"][data-has-book="true"] .book-status,
+body[data-page="home"][data-has-book="true"] .reader-layout {
+  display: none;
+}
+
 .library-bar > label:first-child,
 .setting-control > label {
   color: var(--page-ink);
@@ -935,6 +963,7 @@ main {
   }
 
   body[data-transcript-active="true"] .book-status,
+  body[data-transcript-active="true"] .home-return,
   body[data-transcript-active="true"] .player-settings,
   body[data-transcript-active="true"] .chapter-nav,
   body[data-transcript-active="true"] .app-message,
