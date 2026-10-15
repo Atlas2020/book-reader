@@ -1314,74 +1314,9 @@ window.addEventListener('pagehide', function () {
 loadReadingSettings();
 initializeReader();
 
-const installBtn = document.getElementById('installBtn');
-const installHelp = document.getElementById('installHelp');
-const offlineStatus = document.getElementById('offlineStatus');
-let deferredInstallPrompt = null;
-
-function showInstallInstructions() {
-  const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  installHelp.textContent = isAppleMobile
-    ? 'In Safari, tap Share, then “Add to Home Screen”.'
-    : 'Use your browser menu and choose “Install app” or “Add to Home screen”.';
-  installHelp.hidden = false;
-}
-
 if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./service-worker.js')
-    .then(() => navigator.serviceWorker.ready)
-    .then(() => {
-      offlineStatus.hidden = false;
-      if (!window.matchMedia('(display-mode: standalone)').matches && !navigator.standalone) {
-        installBtn.hidden = false;
-      }
-    })
     .catch((error) => {
-      offlineStatus.textContent = `Offline setup failed: ${error.message}`;
-      offlineStatus.hidden = false;
+      console.error('Offline support could not be enabled:', error);
     });
-} else {
-  offlineStatus.textContent = 'Offline installation requires an HTTPS website.';
-  offlineStatus.hidden = false;
 }
-
-window.addEventListener('beforeinstallprompt', function (event) {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  installBtn.hidden = false;
-});
-
-installBtn.addEventListener('click', async function () {
-  if (!deferredInstallPrompt) {
-    showInstallInstructions();
-    return;
-  }
-
-  try {
-    await deferredInstallPrompt.prompt();
-    const choice = await deferredInstallPrompt.userChoice;
-    installHelp.textContent = choice.outcome === 'accepted'
-      ? 'Starlight Reader is being installed.'
-      : 'Installation was cancelled. You can install it later from your browser menu.';
-    installHelp.hidden = false;
-    deferredInstallPrompt = null;
-  } catch (error) {
-    installHelp.textContent = `Could not start installation: ${error.message}`;
-    installHelp.hidden = false;
-  }
-});
-
-window.addEventListener('appinstalled', function () {
-  installBtn.hidden = true;
-  installHelp.textContent = 'Starlight Reader is installed.';
-  installHelp.hidden = false;
-});
-
-window.addEventListener('offline', function () {
-  offlineStatus.textContent = 'You are offline. The cached reader is available; books remain on this device.';
-  offlineStatus.hidden = false;
-});
-
-window.addEventListener('online', function () {
-  offlineStatus.textContent = 'Offline reading is ready on this device.';
-});

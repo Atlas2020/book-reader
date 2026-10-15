@@ -76,28 +76,6 @@ body[data-theme="sepia"] {
   font-size: clamp(26px, 4vw, 36px);
 }
 
-.install-area {
-  margin: -10px 0 12px;
-  text-align: center;
-}
-
-.install-btn {
-  padding: 8px 13px;
-  background: rgba(130, 155, 205, 0.14);
-  border-color: var(--panel-border);
-}
-
-.install-help {
-  margin: 6px 0 0;
-  color: var(--page-muted);
-  font-size: 12px;
-}
-
-.install-help[hidden],
-.install-btn[hidden] {
-  display: none;
-}
-
 button,
 select,
 input {
@@ -626,14 +604,6 @@ main {
     box-shadow: none;
   }
 
-  .install-area {
-    margin: 18px 0 0;
-  }
-
-  .install-help {
-    text-align: right;
-  }
-
   .library-bar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -968,7 +938,6 @@ main {
   body[data-transcript-active="true"] .player-settings,
   body[data-transcript-active="true"] .chapter-nav,
   body[data-transcript-active="true"] .app-message,
-  body[data-transcript-active="true"] .install-area,
   body[data-transcript-active="true"] .library-bar {
     display: none !important;
   }
