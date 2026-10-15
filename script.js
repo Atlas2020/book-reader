@@ -1291,14 +1291,9 @@ stopBtn.addEventListener('click', function () {
 async function initializeReader() {
   loadReadingSettings();
   try {
-    const books = await refreshLibrary('');
-    const lastBookId = localStorage.getItem('audiobook-reader-last-book');
-    const initialBook = books.find((book) => book.id === lastBookId) || books[0];
-    if (initialBook) {
-      await loadBook(initialBook.id);
-      librarySelect.value = initialBook.id;
-      appMessage.textContent = `Restored your last reading position in "${currentBookTitle}".`;
-    }
+    await refreshLibrary('');
+    document.body.dataset.page = 'home';
+    document.body.dataset.hasBook = 'false';
     const savedVoice = localStorage.getItem('audiobook-reader-voice');
     if (savedVoice && [...voiceSelect.options].some((option) => option.value === savedVoice)) {
       voiceSelect.value = savedVoice;
