@@ -4,7 +4,7 @@ Starlight Reader is a static web app that can be installed as a PWA and used off
 
 ## Deploy
 
-Publish the entire `book-reader` directory to any static web host that serves HTTPS. For example, deploy the folder as a Cloudflare Pages or Netlify site. Keep the folder structure intact, including `icons/`, `images/`, `jszip.min.js`, `manifest.webmanifest`, and `service-worker.js`.
+This repository is published at [https://atlas2020.github.io/book-reader/](https://atlas2020.github.io/book-reader/). The app files live at the repository root. For another static host, deploy the repository root and keep the folder structure intact, including `icons/`, `images/`, `jszip.min.js`, `manifest.webmanifest`, and `service-worker.js`.
 
 The service worker and app installation do not work from a `file://` URL. Open the deployed HTTPS URL once while online so the app shell is cached, then it can be opened offline.
 
@@ -16,7 +16,7 @@ The service worker and app installation do not work from a `file://` URL. Open t
 
 ## Offline and privacy
 
-The app shell, bundled EPUB reader, and reader image are cached for offline use. Imported books and reading progress are stored in the browser on that device and are not uploaded or synchronized. Users need to import their books separately on each device.
+The app shell and bundled EPUB reader are cached for offline use. Imported books and reading progress are stored in the browser on that device and are not uploaded or synchronized. Users need to import their books separately on each device.
 
 Speech voices are provided by the operating system/browser. Their availability and offline behavior depend on the device and installed voice packs.
 

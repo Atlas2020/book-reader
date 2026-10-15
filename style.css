@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 :root {
   color-scheme: dark;
   --page-ink: #e8edff;
@@ -23,14 +25,7 @@ body {
   font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--page-ink);
   background-color: #050816;
-  background-image:
-    radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 75% 32%, rgba(210, 225, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(2px 2px at 42% 70%, rgba(255, 255, 255, 0.75) 50%, transparent 100%),
-    radial-gradient(1px 1px at 88% 82%, rgba(210, 225, 255, 0.85) 50%, transparent 100%),
-    radial-gradient(ellipse at 50% 0%, rgba(41, 66, 130, 0.45), transparent 55%),
-    linear-gradient(180deg, #050816 0%, #0b1430 55%, #101b38 100%);
-  background-size: 180px 180px, 240px 240px, 290px 290px, 210px 210px, auto, auto;
+  background-image: linear-gradient(180deg, #050816 0%, #0b1430 55%, #101b38 100%);
   background-attachment: fixed;
 }
 
@@ -103,21 +98,6 @@ body[data-theme="sepia"] {
   display: none;
 }
 
-.hero-image {
-  width: min(100%, 620px);
-  height: 190px;
-  margin: 0 auto 18px;
-  overflow: hidden;
-  border-radius: 14px;
-}
-
-.hero-image img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 button,
 select,
 input {
@@ -174,8 +154,7 @@ summary:focus-visible {
 
 .library-bar select,
 .setting-control select,
-.display-options select,
-.chapter-search {
+.display-options select {
   min-width: 0;
   padding: 9px 12px;
   color: var(--page-ink);
@@ -213,7 +192,8 @@ summary:focus-visible {
 
 .book-status {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(90px, 220px) auto;
+  grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-items: center;
   gap: 12px;
   margin: 0 0 14px;
@@ -221,6 +201,54 @@ summary:focus-visible {
   background: var(--panel-soft);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
+}
+
+.book-cover {
+  position: relative;
+  display: grid;
+  grid-row: 1 / 3;
+  place-items: center;
+  width: 96px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  color: #f2eee3;
+  background: #315d73;
+  border-radius: 4px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+}
+
+.book-cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.book-cover img[hidden] {
+  display: none;
+}
+
+.book-cover img:not([hidden]) + #bookCoverTitle {
+  display: none;
+}
+
+.book-cover span {
+  display: -webkit-box;
+  max-width: 100%;
+  padding: 12px;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.book-meta {
+  min-width: 0;
 }
 
 .book-status[hidden] {
@@ -242,6 +270,14 @@ summary:focus-visible {
   font-size: 13px;
 }
 
+.book-progress {
+  display: grid;
+  grid-column: 2;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
 .progress-track {
   height: 8px;
   overflow: hidden;
@@ -258,7 +294,7 @@ summary:focus-visible {
   transition: width 180ms ease;
 }
 
-#progressLabel {
+.book-progress #progressLabel {
   color: var(--page-ink);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
@@ -266,6 +302,37 @@ summary:focus-visible {
 
 .toolbar {
   margin: 0 auto 14px;
+}
+
+.more-controls {
+  position: relative;
+}
+
+.more-controls summary,
+.player-settings > summary {
+  padding: 9px 12px;
+  color: var(--page-muted);
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 9px;
+  font-size: 13px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.more-control-options {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  gap: 8px;
+  width: max-content;
+  padding: 10px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
 .secondary-control,
@@ -287,6 +354,15 @@ summary:focus-visible {
 .settings-row {
   align-items: flex-start;
   margin: 0 auto 18px;
+}
+
+.player-settings {
+  margin: 0 auto 16px;
+}
+
+.player-settings > summary {
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .setting-control {
@@ -410,33 +486,34 @@ summary:focus-visible {
   font-size: 17px;
 }
 
-.chapter-search-label {
-  margin: 0 4px 6px;
-  color: var(--page-muted);
-  font-size: 12px;
-}
-
-.chapter-search {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
 .chapter-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 7px;
   overflow-y: auto;
   min-height: 0;
 }
 
-.chapter-nav.is-collapsed .chapter-search-label,
-.chapter-nav.is-collapsed .chapter-search,
+.chapter-node,
+.chapter-children {
+  min-width: 0;
+}
+
+.chapter-entry {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+}
+
 .chapter-nav.is-collapsed .chapter-list {
   display: none;
 }
 
 .chapter-item {
-  width: 100%;
+  flex: 1;
+  width: auto;
   min-width: 0;
   padding: 9px 10px 9px calc(10px + 12px * var(--chapter-level, 0));
   overflow: hidden;
@@ -450,6 +527,18 @@ summary:focus-visible {
   font-size: 13px;
 }
 
+.chapter-toggle {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 36px;
+  padding: 0;
+  color: var(--page-muted);
+  background: var(--panel-soft);
+  border-color: var(--panel-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
 .chapter-item:hover,
 .chapter-item[aria-current="page"] {
   color: var(--page-ink);
@@ -461,14 +550,12 @@ summary:focus-visible {
   box-shadow: inset 3px 0 #79a9ff;
 }
 
-.chapter-empty {
-  padding: 10px;
-  color: var(--page-muted);
-  font-size: 13px;
-}
-
 main {
   min-width: 0;
+}
+
+.transcript-header {
+  display: none;
 }
 
 .content {
@@ -508,16 +595,309 @@ main {
   font-size: 13px;
 }
 
+.app-message:empty {
+  display: none;
+}
+
+.library-bar {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+}
+
 @media (max-width: 700px) {
+  body {
+    --panel: #000;
+    --panel-soft: #151515;
+    --panel-border: #292929;
+    --reader-bg: #000;
+    --reader-ink: #ededed;
+    --accent: #168fff;
+    background: #000;
+  }
+
   .app {
     width: 100%;
     margin: 0;
-    padding: 18px 12px;
+    padding: 12px 16px 28px;
+    background: transparent;
+    border: 0;
     border-radius: 0;
+    box-shadow: none;
   }
 
-  .hero-image {
-    height: 150px;
+  .install-area {
+    margin: 18px 0 0;
+  }
+
+  .install-help {
+    text-align: right;
+  }
+
+  .library-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-top: 22px;
+    margin-bottom: 0;
+    padding-top: 16px;
+  }
+
+  .library-bar > label:first-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .library-bar select {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .upload-label {
+    min-height: 40px;
+    padding: 9px 13px;
+    box-shadow: none;
+  }
+
+  .book-status {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 8px 0 22px;
+    padding: 8px 0 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    text-align: center;
+  }
+
+  .book-cover {
+    flex: 0 0 auto;
+    width: 164px;
+    margin: 0 auto 4px;
+    border-radius: 3px;
+  }
+
+  .book-cover span {
+    padding: 16px;
+    font-size: 18px;
+  }
+
+  .book-meta {
+    width: 100%;
+  }
+
+  .book-status h2 {
+    max-width: 100%;
+    margin: 0 0 7px;
+    font-size: 20px;
+    line-height: 1.35;
+    white-space: normal;
+  }
+
+  .book-status p {
+    font-size: 14px;
+  }
+
+  .book-progress {
+    width: 100%;
+    grid-column: auto;
+    gap: 10px;
+  }
+
+  .progress-track {
+    height: 3px;
+  }
+
+  .book-progress #progressLabel {
+    color: var(--page-muted);
+    font-size: 12px;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto 20px;
+  }
+
+  .toolbar button {
+    min-width: 0;
+    padding: 10px 2px;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  #prevChapterBtn {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #rewindBtn {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #playBtn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: center;
+    width: 68px;
+    height: 68px;
+    color: #fff;
+    background: #168fff;
+    box-shadow: 0 6px 18px rgba(22, 143, 255, 0.24);
+  }
+
+  #playBtn::before {
+    content: "▶";
+    font-size: 27px;
+  }
+
+  #playBtn[data-state="playing"]::before {
+    content: "Ⅱ";
+    font-size: 24px;
+  }
+
+  #forwardBtn {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  #nextChapterBtn {
+    grid-column: 5;
+    grid-row: 1;
+  }
+
+  #prevChapterBtn::before {
+    content: "|◀";
+    font-size: 18px;
+  }
+
+  #rewindBtn::before {
+    content: "↶";
+    font-size: 22px;
+  }
+
+  #forwardBtn::before {
+    content: "↷";
+    font-size: 22px;
+  }
+
+  #nextChapterBtn::before {
+    content: "▶|";
+    font-size: 18px;
+  }
+
+  .toolbar .secondary-control {
+    color: #d7d7d7;
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .more-controls {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .more-controls summary {
+    width: 48px;
+    padding: 8px 0;
+    border-color: transparent;
+    font-size: 0;
+    text-align: center;
+  }
+
+  .more-controls summary::before {
+    content: "•••";
+    font-size: 16px;
+  }
+
+  .more-control-options {
+    right: 50%;
+    transform: translateX(50%);
+  }
+
+  .more-control-options button {
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .more-control-options #pauseBtn {
+    color: var(--page-ink);
+    background: #1a1a1a;
+  }
+
+  .more-control-options #stopBtn {
+    color: var(--page-ink);
+    background: #1a1a1a;
+  }
+
+  .player-settings {
+    margin-bottom: 18px;
+  }
+
+  .player-settings > summary {
+    padding: 8px 12px;
+    border-color: transparent;
+    font-size: 13px;
+  }
+
+  .settings-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 12px;
+    background: #151515;
+    border-radius: 8px;
+  }
+
+  .setting-control {
+    justify-content: space-between;
+    min-width: 0;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .speed-control {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .speed-control input[type="range"] {
+    flex: 1;
+    width: auto;
+    max-width: 180px;
+  }
+
+  .voice-control {
+    justify-content: flex-start;
+  }
+
+  .voice-control select {
+    flex: 1;
+    max-width: none;
+    padding: 8px;
+  }
+
+  .voice-help {
+    display: none;
+  }
+
+  .display-settings summary {
+    padding: 8px 10px;
+    border-radius: 8px;
   }
 
   .reader-layout.has-chapters {
@@ -526,29 +906,216 @@ main {
 
   .chapter-nav {
     min-height: 0;
-    max-height: 260px;
+    max-height: none;
+    border-radius: 8px;
   }
 
-  .book-status {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .chapter-nav:not(.is-collapsed) {
+    padding-top: 20px;
+    padding-bottom: 24px;
   }
 
-  .progress-track {
-    grid-column: 1 / 2;
+  .chapter-nav:not(.is-collapsed) .chapter-nav-header {
+    margin-bottom: 16px;
   }
 
-  #progressLabel {
-    grid-column: 2;
-    grid-row: 2;
+  .chapter-list {
+    overflow: visible;
+  }
+
+  .chapter-nav:not(.is-collapsed) .chapter-list {
+    gap: 10px;
+    padding-block: 4px;
+  }
+
+  .chapter-nav:not(.is-collapsed) .chapter-item {
+    padding-top: 11px;
+    padding-bottom: 11px;
   }
 
   .content {
-    height: 68vh;
+    height: 56vh;
     min-height: 320px;
-    padding: 18px 14px;
+    padding: 18px 4px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
   }
 
   .display-options {
     right: -60px;
+  }
+
+  body[data-has-book="false"] .toolbar,
+  body[data-has-book="false"] .player-settings {
+    display: none;
+  }
+
+  body[data-has-book="false"] .content {
+    display: grid;
+    height: 48vh;
+    min-height: 240px;
+    place-items: center;
+    color: var(--page-muted);
+    text-align: center;
+  }
+
+  body[data-transcript-active="true"] {
+    overflow: hidden;
+  }
+
+  body[data-transcript-active="true"] .book-status,
+  body[data-transcript-active="true"] .player-settings,
+  body[data-transcript-active="true"] .chapter-nav,
+  body[data-transcript-active="true"] .app-message,
+  body[data-transcript-active="true"] .install-area,
+  body[data-transcript-active="true"] .library-bar {
+    display: none !important;
+  }
+
+  body[data-transcript-active="true"] .reader-layout {
+    position: fixed;
+    z-index: 15;
+    inset: 0;
+    display: block;
+    height: 100dvh;
+    overflow: hidden;
+    background: #000;
+  }
+
+  body[data-transcript-active="true"] .reader-layout main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  body[data-transcript-active="true"] .transcript-header {
+    display: flex;
+    flex: 0 0 68px;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 16px;
+    background: #080808;
+    border-bottom: 1px solid #252525;
+  }
+
+  .transcript-mini-cover {
+    position: relative;
+    display: grid;
+    flex: 0 0 42px;
+    place-items: center;
+    width: 42px;
+    height: 56px;
+    overflow: hidden;
+    color: #f2eee3;
+    background: #315d73;
+    border-radius: 3px;
+  }
+
+  .transcript-mini-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .transcript-mini-cover img[hidden] {
+    display: none;
+  }
+
+  .transcript-mini-cover span {
+    display: -webkit-box;
+    padding: 3px;
+    overflow: hidden;
+    font-size: 6px;
+    line-height: 1.3;
+    text-align: center;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+  }
+
+  .transcript-mini-cover img:not([hidden]) + span {
+    display: none;
+  }
+
+  .transcript-meta {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .transcript-meta strong,
+  .transcript-meta span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .transcript-meta strong {
+    color: #f1f1f1;
+    font-size: 15px;
+  }
+
+  .transcript-meta span {
+    color: #999;
+    font-size: 12px;
+  }
+
+  .transcript-close {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: #d0d0d0;
+    background: #222;
+    border-radius: 50%;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  body[data-transcript-active="true"] .content {
+    flex: 1;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 24px 20px calc(150px + env(safe-area-inset-bottom));
+    overflow: auto;
+    color: #a69a9d;
+    background: #000;
+    border: 0;
+    border-radius: 0;
+    font-family: Georgia, "Songti SC", "Noto Serif CJK SC", serif;
+    font-size: 21px;
+    line-height: 1.65;
+    scroll-behavior: smooth;
+  }
+
+  body[data-transcript-active="true"] .speech-chunk {
+    color: #f7f4f4;
+  }
+
+  body[data-transcript-active="true"] .spoken-highlight {
+    color: #fff;
+    background: rgba(22, 143, 255, 0.18);
+    border-radius: 4px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  body[data-transcript-active="true"] .toolbar {
+    position: fixed;
+    z-index: 20;
+    bottom: 0;
+    left: 50%;
+    width: min(100%, 520px);
+    margin: 0;
+    padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    background: rgba(10, 10, 10, 0.96);
+    border-top: 1px solid #242424;
   }
 }

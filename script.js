@@ -11,14 +11,21 @@ const librarySelect = document.getElementById('librarySelect');
 const bookStatus = document.getElementById('bookStatus');
 const bookTitleElement = document.getElementById('bookTitle');
 const readingPosition = document.getElementById('readingPosition');
+const bookCoverImage = document.getElementById('bookCoverImage');
+const bookCoverTitle = document.getElementById('bookCoverTitle');
 const progressBar = document.getElementById('progressBar');
 const progressTrack = document.querySelector('.progress-track');
 const progressLabel = document.getElementById('progressLabel');
 const appMessage = document.getElementById('appMessage');
 const content = document.getElementById('content');
+const readerLayout = document.querySelector('.reader-layout');
+const transcriptCoverImage = document.getElementById('transcriptCoverImage');
+const transcriptCoverTitle = document.getElementById('transcriptCoverTitle');
+const transcriptBookTitle = document.getElementById('transcriptBookTitle');
+const transcriptChapterTitle = document.getElementById('transcriptChapterTitle');
+const closeTranscriptBtn = document.getElementById('closeTranscriptBtn');
 const chapterNav = document.getElementById('chapterNav');
 const chapterList = document.getElementById('chapterList');
-const chapterSearch = document.getElementById('chapterSearch');
 const toggleChaptersBtn = document.getElementById('toggleChaptersBtn');
 const prevChapterBtn = document.getElementById('prevChapterBtn');
 const nextChapterBtn = document.getElementById('nextChapterBtn');
@@ -33,6 +40,9 @@ let chapters = [];
 let selectedChapterIndex = 0;
 let currentBookId = '';
 let currentBookTitle = '';
+let currentBookCover = null;
+let renderedCoverBookId = '';
+let currentCoverObjectUrl = '';
 let currentBookProgress = { chapterIndex: 0, offset: 0 };
 let bookLanguage = 'zh-CN';
 let speechChunks = [];
@@ -118,6 +128,7 @@ async function saveCurrentBook() {
   await requestBookStore('readwrite', (store) => store.put({
     id: currentBookId,
     title: currentBookTitle,
+    cover: currentBookCover,
     language: bookLanguage,
     chapters,
     progress: currentBookProgress,
@@ -143,16 +154,46 @@ function calculateProgress(chapterIndex = selectedChapterIndex, offset = current
   return Math.max(0, Math.min(100, Math.round((completedLength + Math.min(offset, currentLength)) / totalLength * 100)));
 }
 
+function updateBookCover() {
+  if (renderedCoverBookId === currentBookId) return;
+  if (currentCoverObjectUrl) URL.revokeObjectURL(currentCoverObjectUrl);
+  currentCoverObjectUrl = '';
+  renderedCoverBookId = currentBookId;
+  bookCoverTitle.textContent = currentBookTitle;
+
+  if (currentBookCover instanceof Blob) {
+    currentCoverObjectUrl = URL.createObjectURL(currentBookCover);
+  } else if (typeof currentBookCover === 'string') {
+    currentCoverObjectUrl = currentBookCover;
+  }
+
+  bookCoverImage.hidden = !currentCoverObjectUrl;
+  transcriptCoverImage.hidden = !currentCoverObjectUrl;
+  transcriptCoverTitle.textContent = currentBookTitle;
+  if (currentCoverObjectUrl) {
+    bookCoverImage.src = currentCoverObjectUrl;
+    transcriptCoverImage.src = currentCoverObjectUrl;
+  } else {
+    bookCoverImage.removeAttribute('src');
+    transcriptCoverImage.removeAttribute('src');
+  }
+}
+
 function updateBookStatus() {
   if (!chapters.length) {
     bookStatus.hidden = true;
+    document.body.dataset.hasBook = 'false';
     return;
   }
   bookStatus.hidden = false;
+  document.body.dataset.hasBook = 'true';
+  updateBookCover();
   bookTitleElement.textContent = currentBookTitle;
   const percent = calculateProgress();
   const chapter = chapters[selectedChapterIndex];
-  readingPosition.textContent = `Chapter ${selectedChapterIndex + 1} of ${chapters.length} · ${chapter.title}`;
+  readingPosition.textContent = `第 ${selectedChapterIndex + 1} 章 / 共 ${chapters.length} 章 · ${chapter.title}`;
+  transcriptBookTitle.textContent = currentBookTitle;
+  transcriptChapterTitle.textContent = chapter.title;
   progressBar.style.width = `${percent}%`;
   progressTrack.setAttribute('aria-valuenow', String(percent));
   progressLabel.textContent = `${percent}%`;
@@ -168,9 +209,11 @@ function updateBookStatus() {
 
 function setPlaybackButtons(state = 'stopped') {
   isSpeechActive = state !== 'stopped';
-  playBtn.textContent = state === 'playing' ? 'Playing…' : state === 'paused' ? 'Resume' : 'Play';
+  playBtn.textContent = state === 'playing' ? '暂停' : state === 'paused' ? '继续' : '播放';
+  playBtn.dataset.state = state;
+  playBtn.setAttribute('aria-label', state === 'playing' ? '暂停' : state === 'paused' ? '继续播放' : '播放');
   playBtn.setAttribute('aria-pressed', String(state === 'playing'));
-  pauseBtn.textContent = state === 'paused' ? 'Paused' : 'Pause';
+  pauseBtn.textContent = state === 'paused' ? '继续' : '暂停';
   pauseBtn.setAttribute('aria-pressed', String(state === 'paused'));
   pauseBtn.disabled = state !== 'playing';
 }
@@ -600,6 +643,17 @@ async function readEpub(file) {
       .filter((reference) => reference.getAttribute('type') === 'cover')
       .map((reference) => resolveArchivePath(packageDirectory, reference.getAttribute('href') || ''))
   );
+  const coverItem = Array.from(manifest.values()).find((item) => {
+    const itemId = item.getAttribute('id');
+    const properties = (item.getAttribute('properties') || '').split(/\s+/);
+    const href = item.getAttribute('href') || '';
+    const path = href ? resolveArchivePath(packageDirectory, href) : '';
+    return (properties.includes('cover-image') || coverIds.has(itemId) || coverPaths.has(path))
+      && (item.getAttribute('media-type') || '').startsWith('image/');
+  });
+  const coverPath = coverItem && resolveArchivePath(packageDirectory, coverItem.getAttribute('href') || '');
+  const coverFile = coverPath && archive.file(coverPath);
+  const cover = coverFile ? await coverFile.async('blob') : null;
   const tocId = spine.getAttribute('toc');
 
   for (const reference of getElementsByLocalName(spine, 'itemref')) {
@@ -697,6 +751,7 @@ async function readEpub(file) {
 
   return {
     title: metadataTitle || file.name.replace(/\.[^.]+$/, ''),
+    cover,
     language: bookLanguage,
     chapters: epubChapters
   };
@@ -761,7 +816,6 @@ function renderChapterList() {
   }
 
   roots.forEach((node) => chapterList.append(createNode(node)));
-  filterChapterList();
   const currentButton = chapterList.querySelector('[aria-current="page"]');
   if (currentButton) {
     let parent = currentButton.closest('.chapter-node')?.parentElement?.closest('.chapter-node');
@@ -782,46 +836,30 @@ function renderChapterList() {
   }
 }
 
-function filterChapterList() {
-  const query = chapterSearch.value.trim().toLocaleLowerCase();
-  for (const node of chapterList.querySelectorAll('.chapter-node')) {
-    const matches = !query || node.querySelector(':scope > .chapter-entry .chapter-item')
-      .textContent.toLocaleLowerCase().includes(query);
-    const descendantMatches = [...node.querySelectorAll('.chapter-node')].some((child) => {
-      const ownButton = child.querySelector(':scope > .chapter-entry .chapter-item');
-      return ownButton?.textContent.toLocaleLowerCase().includes(query);
-    });
-    node.hidden = !matches && !descendantMatches;
-    if (query && descendantMatches) node.classList.remove('is-collapsed');
-  }
-  const empty = chapterList.querySelector('.chapter-empty');
-  if (empty) empty.remove();
-  if (query && !chapterList.querySelector('.chapter-node:not([hidden])')) {
-    const message = document.createElement('div');
-    message.className = 'chapter-empty';
-    message.textContent = 'No matching chapters';
-    chapterList.append(message);
-  }
-}
-
 function renderChapterText(text) {
   activeSpeechChunk = null;
   content.textContent = text;
 }
 
-function getHighlightEnd(text, start, charLength) {
-  if (charLength > 0) return Math.min(text.length, start + charLength);
-
+function getSentenceBounds(text, characterIndex) {
   if (typeof Intl.Segmenter === 'function') {
-    const segmenter = new Intl.Segmenter(bookLanguage, { granularity: 'word' });
-    for (const segment of segmenter.segment(text.slice(start))) {
-      if (segment.isWordLike) return start + segment.index + segment.segment.length;
-      if (segment.index > 0) break;
+    const segmenter = new Intl.Segmenter(bookLanguage, { granularity: 'sentence' });
+    for (const segment of segmenter.segment(text)) {
+      const end = segment.index + segment.segment.length;
+      if (characterIndex < end) return { start: segment.index, end };
     }
   }
 
-  const match = text.slice(start).match(/^[^\s，。！？；：、,.!?;:]+/);
-  return start + (match ? match[0].length : 1);
+  let start = 0;
+  const sentenceEnding = /[。！？!?；;…\n]+[”’"』」】）)]*|\.(?=\s|$)/g;
+  let match;
+  while ((match = sentenceEnding.exec(text))) {
+    const end = sentenceEnding.lastIndex;
+    if (characterIndex < end) return { start, end };
+    start = end;
+    while (start < text.length && /\s/.test(text[start])) start += 1;
+  }
+  return { start, end: text.length };
 }
 
 function scrollHighlightIntoView(element) {
@@ -842,6 +880,19 @@ function scrollToTextOffset(offset) {
   const rect = range.getBoundingClientRect();
   const containerRect = content.getBoundingClientRect();
   content.scrollTop += rect.top - containerRect.top - content.clientHeight / 2;
+}
+
+function showTranscriptView() {
+  if (!window.matchMedia('(max-width: 700px)').matches
+    || document.body.dataset.transcriptActive === 'true') return;
+  document.body.dataset.transcriptActive = 'true';
+  window.requestAnimationFrame(() => readerLayout.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+
+function closeTranscriptView() {
+  if (document.body.dataset.transcriptActive !== 'true') return;
+  document.body.dataset.transcriptActive = 'false';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function updateReadingProgress(offset = currentBookProgress.offset) {
@@ -875,11 +926,12 @@ function renderSpeechChunk(index) {
   scrollHighlightIntoView(chunkElement);
 }
 
-function highlightSpeechPosition(charIndex, charLength = 0) {
+function highlightSpeechPosition(charIndex) {
   if (!activeSpeechChunk) return;
 
-  const start = Math.max(0, Math.min(charIndex, activeSpeechChunk.text.length));
-  const end = Math.max(start + 1, getHighlightEnd(activeSpeechChunk.text, start, charLength));
+  const sentence = getSentenceBounds(activeSpeechChunk.text, charIndex);
+  const start = Math.max(0, Math.min(sentence.start, activeSpeechChunk.text.length - 1));
+  const end = Math.max(start + 1, Math.min(sentence.end, activeSpeechChunk.text.length));
   const displayText = activeSpeechChunk.element.textContent;
   let displayCursor = 0;
   let textCursor = start;
@@ -917,6 +969,7 @@ function stopSpeech() {
   speechPaused = false;
   isSpeechActive = false;
   speechIndex = 0;
+  closeTranscriptView();
   setPlaybackButtons();
   if (chapters.length > 0) renderChapterText(chapters[selectedChapterIndex].text);
 }
@@ -928,7 +981,6 @@ function selectChapter(index) {
   currentBookProgress = { chapterIndex: index, offset: 0 };
   renderChapterText(chapters[index].text);
   renderChapterList();
-  chapterSearch.value = '';
   updateBookStatus();
   persistProgress();
 }
@@ -936,7 +988,7 @@ function selectChapter(index) {
 async function refreshLibrary(selectedId = currentBookId) {
   const books = await requestBookStore('readonly', (store) => store.getAll());
   books.sort((first, second) => second.updatedAt - first.updatedAt);
-  librarySelect.replaceChildren(new Option('Choose a book…', ''));
+  librarySelect.replaceChildren(new Option('选择图书', ''));
   for (const book of books) {
     librarySelect.add(new Option(book.title, book.id));
   }
@@ -951,6 +1003,8 @@ async function loadBook(bookId) {
   stopSpeech();
   currentBookId = book.id;
   currentBookTitle = book.title;
+  currentBookCover = book.cover || null;
+  renderedCoverBookId = '';
   chapters = book.chapters;
   bookLanguage = book.language || 'zh-CN';
   currentBookProgress = book.progress || { chapterIndex: 0, offset: 0 };
@@ -997,6 +1051,7 @@ function startSpeechAtOffset(offset) {
     setPlaybackButtons();
     return;
   }
+  showTranscriptView();
   updateBookStatus();
   setPlaybackButtons('playing');
   speakNextChunk(speechSession);
@@ -1029,11 +1084,20 @@ voiceSelect.addEventListener('change', function () {
 });
 
 rateInput.addEventListener('change', saveCurrentSettings);
-chapterSearch.addEventListener('input', filterChapterList);
+closeTranscriptBtn.addEventListener('click', closeTranscriptView);
 
 toggleChaptersBtn.addEventListener('click', function () {
   const collapsed = chapterNav.classList.toggle('is-collapsed');
-  toggleChaptersBtn.textContent = collapsed ? 'Expand' : 'Collapse';
+  if (!collapsed) {
+    for (const node of chapterList.querySelectorAll('.chapter-node.is-collapsed')) {
+      node.classList.remove('is-collapsed');
+    }
+    for (const toggle of chapterList.querySelectorAll('.chapter-toggle')) {
+      toggle.textContent = '−';
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+  }
+  toggleChaptersBtn.textContent = collapsed ? '展开全部' : '收起目录';
   toggleChaptersBtn.setAttribute('aria-expanded', String(!collapsed));
 });
 
@@ -1071,14 +1135,17 @@ fileInput.addEventListener('change', async function (event) {
       const epub = await readEpub(file);
       chapters = epub.chapters;
       title = epub.title;
+      currentBookCover = epub.cover || null;
       bookLanguage = epub.language || bookLanguage;
     } else {
       chapters = splitTextIntoChapters(await file.text());
+      currentBookCover = null;
       bookLanguage = 'zh-CN';
     }
     const fullText = chapters.map((chapter) => chapter.text).join('\n');
     currentBookId = createBookId(file.name, fullText);
     currentBookTitle = title;
+    renderedCoverBookId = '';
     currentBookProgress = { chapterIndex: 0, offset: 0 };
     selectedChapterIndex = 0;
     await saveCurrentBook();
@@ -1109,11 +1176,18 @@ playBtn.addEventListener('click', function () {
     appMessage.textContent = 'Choose a book from your library or import one first.';
     return;
   }
+  showTranscriptView();
 
   if (speechPaused) {
     speechPaused = false;
     window.speechSynthesis.resume();
     setPlaybackButtons('playing');
+    return;
+  }
+  if (isSpeechActive) {
+    speechPaused = true;
+    window.speechSynthesis.pause();
+    setPlaybackButtons('paused');
     return;
   }
   startSpeechAtOffset(currentBookProgress.offset);

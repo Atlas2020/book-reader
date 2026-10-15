@@ -1,4 +1,4 @@
-const CACHE_NAME = 'starlight-reader-v3';
+const CACHE_NAME = 'starlight-reader-v4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -9,8 +9,7 @@ const APP_SHELL = [
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './images/girl-under-tree.jpg'
+  './icons/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
